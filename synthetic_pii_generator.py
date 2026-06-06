@@ -107,6 +107,22 @@ class GLiNERRecognizer(EntityRecognizer):
 import re
 from presidio_analyzer import Pattern, PatternRecognizer
 
+_DIAGNOSIS_TERMS = [
+    "hypertension", "type 2 diabetes", "type 1 diabetes", "diabetes mellitus",
+    "asthma", "chronic kidney disease", "atrial fibrillation", "copd",
+    "osteoarthritis", "major depressive disorder", "hypothyroidism",
+    "acute bronchitis", "pneumonia", "anemia", "anxiety disorder",
+    "heart failure", "coronary artery disease", "stroke", "epilepsy",
+    "gastroesophageal reflux disease", "gerd", "acute bronchitis",
+]
+
+def _make_diagnosis_recognizer() -> PatternRecognizer:
+    pattern = r"(?i)\b(" + "|".join(re.escape(t) for t in _DIAGNOSIS_TERMS) + r")\b"
+    return PatternRecognizer(
+        supported_entity="DIAGNOSIS",
+        patterns=[Pattern(name="DIAGNOSIS_KEYWORD", regex=pattern, score=0.85)],
+    )
+
 def _make_pattern_recognizers() -> list[PatternRecognizer]:
     specs = [
         ("EMAIL_ADDRESS",         r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"),
@@ -174,8 +190,17 @@ SYNTH_MAP: dict[str, callable] = {
     "CRYPTO_ADDRESS":       lambda: f"0x{_random_hex(40)}",
     "MEDICAL_RECORD_NUMBER": _synth_mrn,
     "HEALTH_PLAN_NUMBER":   _synth_health_plan,
-    "DIAGNOSIS":            lambda: random.choice(["Hypertension", "Type 2 Diabetes", "Asthma"]),
-    "MEDICATION":           lambda: random.choice(["Metformin 500mg", "Lisinopril 10mg", "Atorvastatin 20mg"]),
+    "DIAGNOSIS":            lambda: random.choice([
+                                "Hypertension", "Type 2 Diabetes", "Asthma", "Chronic Kidney Disease",
+                                "Atrial Fibrillation", "COPD", "Osteoarthritis", "Major Depressive Disorder",
+                                "Hypothyroidism", "Gastroesophageal Reflux Disease",
+                            ]),
+    "MEDICATION":           lambda: random.choice([
+                                "Metformin 500mg", "Lisinopril 10mg", "Atorvastatin 20mg",
+                                "Amlodipine 5mg", "Omeprazole 20mg", "Levothyroxine 50mcg",
+                                "Sertraline 100mg", "Albuterol 90mcg", "Gabapentin 300mg",
+                                "Furosemide 40mg",
+                            ]),
     "BLOOD_TYPE":           lambda: f"blood type {random.choice(['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'])}",
     "IP_ADDRESS":           fake.ipv4,
     "MAC_ADDRESS":          _synth_mac,
@@ -224,6 +249,7 @@ def build_pipeline():
 
     for pr in _make_pattern_recognizers():
         analyzer.registry.add_recognizer(pr)
+    analyzer.registry.add_recognizer(_make_diagnosis_recognizer())
 
     anonymizer = AnonymizerEngine()
 
