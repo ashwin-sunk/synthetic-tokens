@@ -52,7 +52,7 @@ fake = Faker()
 # Entities GLiNER base model handles reasonably well
 GLINER_SUPPORTED = [
     "PERSON", "LOCATION", "ORGANIZATION", "DATE_TIME",
-    "EMAIL_ADDRESS", "PHONE_NUMBER", "URL",
+    "PHONE_NUMBER", "URL",
     "IP_ADDRESS", "CREDIT_CARD", "IBAN",
     "PASSPORT", "AGE", "GENDER", "NATIONALITY",
     "DIAGNOSIS", "MEDICATION", "BLOOD_TYPE",
@@ -200,7 +200,7 @@ def build_pipeline():
 
     if _gliner_model is not None:
         # GLiNER covers NER — remove overlapping Presidio built-ins to avoid duplicates
-        overlap = {"EmailRecognizer", "PhoneRecognizer", "IpRecognizer",
+        overlap = {"PhoneRecognizer", "IpRecognizer",
                    "CreditCardRecognizer", "IbanRecognizer", "UrlRecognizer"}
         analyzer.registry.recognizers = [
             r for r in analyzer.registry.recognizers
