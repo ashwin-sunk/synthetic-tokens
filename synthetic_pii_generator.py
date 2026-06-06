@@ -52,7 +52,7 @@ fake = Faker()
 # Entities GLiNER base model handles reasonably well
 GLINER_SUPPORTED = [
     "PERSON", "LOCATION", "ORGANIZATION", "DATE_TIME",
-    "EMAIL_ADDRESS", "PHONE_NUMBER", "URL",
+    "PHONE_NUMBER", "URL",
     "IP_ADDRESS", "CREDIT_CARD", "IBAN",
     "PASSPORT", "AGE", "GENDER", "NATIONALITY",
     "DIAGNOSIS", "MEDICATION", "BLOOD_TYPE",
@@ -108,6 +108,8 @@ from presidio_analyzer import Pattern, PatternRecognizer
 
 def _make_pattern_recognizers() -> list[PatternRecognizer]:
     specs = [
+        # Score 0.99 ensures this beats GLiNER PERSON/URL detections on email spans
+        ("EMAIL_ADDRESS",       r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"),
         ("SWIFT_CODE",          r"\b[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?\b"),
         ("TAX_IDENTIFIER",      r"\b\d{2}-\d{7}\b|\b\d{3}-\d{2}-\d{4}\b"),
         ("HEALTH_PLAN_NUMBER",  r"\b[A-Z]{3}\d{9,12}\b"),
@@ -115,12 +117,14 @@ def _make_pattern_recognizers() -> list[PatternRecognizer]:
         ("MAC_ADDRESS",         r"\b([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}\b"),
         ("PASSWORD",            r"(?i)password\s*[=:]\s*\S+"),
     ]
+    # Email gets a higher score to outrank GLiNER's PERSON/URL detections on email spans
+    scores = {"EMAIL_ADDRESS": 0.99}
     recognizers = []
     for entity, pattern in specs:
         recognizers.append(
             PatternRecognizer(
                 supported_entity=entity,
-                patterns=[Pattern(name=entity, regex=pattern, score=0.7)],
+                patterns=[Pattern(name=entity, regex=pattern, score=scores.get(entity, 0.7))],
             )
         )
     return recognizers
