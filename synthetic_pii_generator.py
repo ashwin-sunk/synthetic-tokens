@@ -54,14 +54,14 @@ GLINER_SUPPORTED = [
     "PERSON", "LOCATION", "ORGANIZATION", "DATE_TIME",
     "PHONE_NUMBER",
     "IP_ADDRESS", "CREDIT_CARD", "IBAN",
-    "PASSPORT", "AGE", "GENDER", "NATIONALITY",
+    "AGE", "GENDER", "NATIONALITY",
     "DIAGNOSIS", "MEDICATION", "BLOOD_TYPE",
     "BANK_ACCOUNT", "CRYPTO_ADDRESS",
 ]
 
 # Entities that rely on regex/pattern matching (added via Presidio built-ins or below)
 PATTERN_BASED = [
-    "EMAIL_ADDRESS", "URL",
+    "EMAIL_ADDRESS", "URL", "PASSPORT",
     "SWIFT_CODE", "TAX_IDENTIFIER", "HEALTH_PLAN_NUMBER",
     "MEDICAL_RECORD_NUMBER", "MAC_ADDRESS", "PASSWORD",
 ]
@@ -75,7 +75,7 @@ ALL_ENTITIES = GLINER_SUPPORTED + PATTERN_BASED
 class GLiNERRecognizer(EntityRecognizer):
     """Presidio recognizer that delegates NER to GLiNER."""
 
-    THRESHOLD = 0.80
+    THRESHOLD = 0.86
 
     def __init__(self):
         super().__init__(supported_entities=GLINER_SUPPORTED, name="GLiNERRecognizer")
@@ -110,7 +110,8 @@ from presidio_analyzer import Pattern, PatternRecognizer
 def _make_pattern_recognizers() -> list[PatternRecognizer]:
     specs = [
         ("EMAIL_ADDRESS",         r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"),
-        ("URL",                   r"https?://[^\s.,;:!?)\]]+|www\.[^\s.,;:!?)\]]+"),
+        ("URL",                   r"https?://[^\s]*[^\s.,;:!?)\]]|www\.[^\s]*[^\s.,;:!?)\]]"),
+        ("PASSPORT",              r"(?-i)\b[A-Z]{1,2}\d{6,9}\b"),
         ("SWIFT_CODE",            r"(?-i)\b[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?\b"),
         ("TAX_IDENTIFIER",        r"\b\d{2}-\d{7}\b|\b\d{3}-\d{2}-\d{4}\b"),
         ("HEALTH_PLAN_NUMBER",    r"\b[A-Z]{3}\d{9,12}\b"),
