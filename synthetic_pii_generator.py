@@ -75,7 +75,7 @@ ALL_ENTITIES = GLINER_SUPPORTED + PATTERN_BASED
 class GLiNERRecognizer(EntityRecognizer):
     """Presidio recognizer that delegates NER to GLiNER."""
 
-    THRESHOLD = 0.6
+    THRESHOLD = 0.75
 
     def __init__(self):
         super().__init__(supported_entities=GLINER_SUPPORTED, name="GLiNERRecognizer")
