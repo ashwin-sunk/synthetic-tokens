@@ -52,8 +52,7 @@ fake = Faker()
 # Entities GLiNER base model handles reasonably well
 GLINER_SUPPORTED = [
     "PERSON", "LOCATION", "ORGANIZATION", "DATE_TIME",
-    "PHONE_NUMBER",
-    "IP_ADDRESS", "CREDIT_CARD",
+    "PHONE_NUMBER", "CREDIT_CARD",
     "AGE", "GENDER", "NATIONALITY",
     "DIAGNOSIS", "MEDICATION", "BLOOD_TYPE",
     "BANK_ACCOUNT", "CRYPTO_ADDRESS",
@@ -61,7 +60,7 @@ GLINER_SUPPORTED = [
 
 # Entities that rely on regex/pattern matching (added via Presidio built-ins or below)
 PATTERN_BASED = [
-    "EMAIL_ADDRESS", "URL", "PASSPORT", "IBAN",
+    "EMAIL_ADDRESS", "URL", "PASSPORT", "IBAN", "IP_ADDRESS",
     "SWIFT_CODE", "TAX_IDENTIFIER", "HEALTH_PLAN_NUMBER",
     "MEDICAL_RECORD_NUMBER", "MAC_ADDRESS", "PASSWORD",
 ]
@@ -75,7 +74,7 @@ ALL_ENTITIES = GLINER_SUPPORTED + PATTERN_BASED
 class GLiNERRecognizer(EntityRecognizer):
     """Presidio recognizer that delegates NER to GLiNER."""
 
-    THRESHOLD = 0.75
+    THRESHOLD = 0.70
 
     def __init__(self):
         super().__init__(supported_entities=GLINER_SUPPORTED, name="GLiNERRecognizer")
