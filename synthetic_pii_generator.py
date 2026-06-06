@@ -53,7 +53,7 @@ fake = Faker()
 GLINER_SUPPORTED = [
     "PERSON", "LOCATION", "ORGANIZATION", "DATE_TIME",
     "PHONE_NUMBER",
-    "IP_ADDRESS", "CREDIT_CARD", "IBAN",
+    "IP_ADDRESS", "CREDIT_CARD",
     "AGE", "GENDER", "NATIONALITY",
     "DIAGNOSIS", "MEDICATION", "BLOOD_TYPE",
     "BANK_ACCOUNT", "CRYPTO_ADDRESS",
@@ -61,7 +61,7 @@ GLINER_SUPPORTED = [
 
 # Entities that rely on regex/pattern matching (added via Presidio built-ins or below)
 PATTERN_BASED = [
-    "EMAIL_ADDRESS", "URL", "PASSPORT",
+    "EMAIL_ADDRESS", "URL", "PASSPORT", "IBAN",
     "SWIFT_CODE", "TAX_IDENTIFIER", "HEALTH_PLAN_NUMBER",
     "MEDICAL_RECORD_NUMBER", "MAC_ADDRESS", "PASSWORD",
 ]
@@ -112,6 +112,7 @@ def _make_pattern_recognizers() -> list[PatternRecognizer]:
         ("EMAIL_ADDRESS",         r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"),
         ("URL",                   r"https?://[^\s]*[^\s.,;:!?)\]]|www\.[^\s]*[^\s.,;:!?)\]]"),
         ("PASSPORT",              r"(?-i)\b[A-Z]{1,2}\d{6,9}\b"),
+        ("IBAN",                  r"(?-i)\b[A-Z]{2}\d{2}[A-Z0-9]{4,30}\b"),
         ("SWIFT_CODE",            r"(?-i)\b[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?\b"),
         ("TAX_IDENTIFIER",        r"\b\d{2}-\d{7}\b|\b\d{3}-\d{2}-\d{4}\b"),
         ("HEALTH_PLAN_NUMBER",    r"\b[A-Z]{3}\d{9,12}\b"),
@@ -120,7 +121,7 @@ def _make_pattern_recognizers() -> list[PatternRecognizer]:
         ("PASSWORD",              r"(?i)password\s*[=:]\s*\S+"),
     ]
     # Regex-based entities get 0.99 to beat GLiNER scores on overlapping spans
-    HIGH_SCORE = {"EMAIL_ADDRESS", "URL", "TAX_IDENTIFIER"}
+    HIGH_SCORE = {"EMAIL_ADDRESS", "URL", "TAX_IDENTIFIER", "IBAN"}
     recognizers = []
     for entity, pattern in specs:
         recognizers.append(
@@ -159,10 +160,10 @@ def _synth_mac() -> str:
 
 SYNTH_MAP: dict[str, callable] = {
     "PERSON":               fake.name,
-    "LOCATION":             fake.address,
+    "LOCATION":             fake.city,
     "ORGANIZATION":         fake.company,
     "DATE_TIME":            lambda: fake.date_time_this_decade().strftime("%B %d, %Y %H:%M"),
-    "AGE":                  lambda: str(random.randint(18, 90)),
+    "AGE":                  lambda: f"age {random.randint(18, 90)}",
     "GENDER":               lambda: random.choice(["Male", "Female", "Non-binary"]),
     "NATIONALITY":          fake.country,
     "CREDIT_CARD":          fake.credit_card_number,
@@ -175,7 +176,7 @@ SYNTH_MAP: dict[str, callable] = {
     "HEALTH_PLAN_NUMBER":   _synth_health_plan,
     "DIAGNOSIS":            lambda: random.choice(["Hypertension", "Type 2 Diabetes", "Asthma"]),
     "MEDICATION":           lambda: random.choice(["Metformin 500mg", "Lisinopril 10mg", "Atorvastatin 20mg"]),
-    "BLOOD_TYPE":           lambda: random.choice(["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]),
+    "BLOOD_TYPE":           lambda: f"blood type {random.choice(['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'])}",
     "IP_ADDRESS":           fake.ipv4,
     "MAC_ADDRESS":          _synth_mac,
     "EMAIL_ADDRESS":        fake.email,
@@ -209,7 +210,7 @@ def build_pipeline():
         # Remove spaCy (GLiNER handles NER) and our regex-covered types.
         # Keep PhoneRecognizer, IpRecognizer, IbanRecognizer, CreditCardRecognizer
         # as reliable regex fallbacks for entities GLiNER may miss.
-        overlap = {"SpacyRecognizer", "EmailRecognizer", "UrlRecognizer"}
+        overlap = {"SpacyRecognizer", "EmailRecognizer", "UrlRecognizer", "IbanRecognizer"}
         analyzer.registry.recognizers = [
             r for r in analyzer.registry.recognizers
             if r.__class__.__name__ not in overlap
