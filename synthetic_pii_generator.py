@@ -112,7 +112,7 @@ def _make_pattern_recognizers() -> list[PatternRecognizer]:
         ("EMAIL_ADDRESS",         r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"),
         ("URL",                   r"https?://[^\s]*[^\s.,;:!?)\]]|www\.[^\s]*[^\s.,;:!?)\]]"),
         ("PASSPORT",              r"(?-i)\b[A-Z]{1,2}\d{6,9}\b"),
-        ("IBAN",                  r"(?-i)\b[A-Z]{2}\d{2}[A-Z0-9]{4,30}\b"),
+        ("IBAN",                  r"(?-i)\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b"),
         ("SWIFT_CODE",            r"(?-i)\b[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?\b"),
         ("TAX_IDENTIFIER",        r"\b\d{2}-\d{7}\b|\b\d{3}-\d{2}-\d{4}\b"),
         ("HEALTH_PLAN_NUMBER",    r"\b[A-Z]{3}\d{9,12}\b"),
