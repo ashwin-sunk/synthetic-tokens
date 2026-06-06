@@ -75,7 +75,7 @@ ALL_ENTITIES = GLINER_SUPPORTED + PATTERN_BASED
 class GLiNERRecognizer(EntityRecognizer):
     """Presidio recognizer that delegates NER to GLiNER."""
 
-    THRESHOLD = 0.86
+    THRESHOLD = 0.75
 
     def __init__(self):
         super().__init__(supported_entities=GLINER_SUPPORTED, name="GLiNERRecognizer")
@@ -206,8 +206,10 @@ def build_pipeline():
 
     if _gliner_model is not None:
         # GLiNER covers NER — remove overlapping Presidio built-ins to avoid duplicates
-        overlap = {"EmailRecognizer", "PhoneRecognizer", "IpRecognizer",
-                   "CreditCardRecognizer", "IbanRecognizer", "UrlRecognizer"}
+        # Remove spaCy (GLiNER handles NER) and our regex-covered types.
+        # Keep PhoneRecognizer, IpRecognizer, IbanRecognizer, CreditCardRecognizer
+        # as reliable regex fallbacks for entities GLiNER may miss.
+        overlap = {"SpacyRecognizer", "EmailRecognizer", "UrlRecognizer"}
         analyzer.registry.recognizers = [
             r for r in analyzer.registry.recognizers
             if r.__class__.__name__ not in overlap
