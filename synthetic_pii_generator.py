@@ -61,6 +61,7 @@ GLINER_SUPPORTED = [
 
 # Entities that rely on regex/pattern matching (added via Presidio built-ins or below)
 PATTERN_BASED = [
+    "EMAIL_ADDRESS",
     "SWIFT_CODE", "TAX_IDENTIFIER", "HEALTH_PLAN_NUMBER",
     "MEDICAL_RECORD_NUMBER", "MAC_ADDRESS", "PASSWORD",
 ]
