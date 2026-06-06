@@ -297,6 +297,21 @@ if __name__ == "__main__":
                 "John Doe's SSN/TIN is 52-3891024. His passport number is AB1234567. "
                 "System credentials: password=S3cur3P@ss! accessed from http://internal.corp/admin."
             ),
+            (
+                "Patient Maria Gonzalez, born January 15, 1985, female, American, age 39, blood type O+, "
+                "was diagnosed with Type 2 Diabetes and prescribed Metformin 500mg. "
+                "Her MRN is MRN-7291048 and health plan is XYZ987654321. "
+                "Contact her at maria.gonzalez@hospital.org or call +1-800-555-1234. "
+                "She lives at 742 Evergreen Terrace, Springfield. "
+                "Payment details: IBAN DE89370400440532013000 (SWIFT: COBADEFFXXX), "
+                "credit card 4111111111111111, bank account NWBK60161331926819, "
+                "crypto wallet 0xAbCdEf1234567890AbCdEf1234567890AbCdEf12. "
+                "Tax ID: 52-1234567, passport AB9876543. "
+                "Last login from IP 10.0.0.1, MAC AA:BB:CC:DD:EE:FF, "
+                "system URL https://secure.internal.example.com/dashboard. "
+                "Credentials: password=MyS3cr3tP@ss! "
+                "Billing contact: John Smith (john.smith@billing.com), nationality Canadian."
+            ),
         ]
 
     for i, raw in enumerate(test_cases, 1):
