@@ -50,6 +50,90 @@ Without GLiNER the service falls back to spaCy NER + Presidio built-in recognize
 
 ---
 
+## Docker
+
+The easiest way to run the service — models are baked into the image at build time so there are no runtime downloads.
+
+### Prerequisites
+Docker Desktop installed and running.
+
+### Build the image
+
+```bash
+# With HuggingFace token (if GLiNER model requires authentication)
+docker build --build-arg HF_TOKEN=hf_... -t synthetic-pii-api .
+
+# Without token (if model is public)
+docker build -t synthetic-pii-api .
+```
+
+> Build takes **5–15 minutes** — spaCy (~587 MB) and GLiNER (~500 MB) are downloaded and baked in.  
+> Use `--no-cache` to force a full rebuild.
+
+### Run locally
+
+```bash
+docker run -d --name synthetic-pii-api --restart unless-stopped \
+  -p 8000:8000 \
+  synthetic-pii-api:latest
+```
+
+Watch startup logs (~60s for models to load):
+```bash
+docker logs -f synthetic-pii-api
+```
+
+Test once `Application startup complete` appears:
+```bash
+curl http://localhost:8000/health
+# {"status":"ok","pipeline_ready":true}
+
+curl -X POST http://localhost:8000/anonymize \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Call John Smith at john@example.com"}'
+```
+
+### Management commands
+
+```bash
+docker stop synthetic-pii-api      # stop the container
+docker start synthetic-pii-api     # start it again (no re-download)
+docker logs -f synthetic-pii-api   # stream logs
+docker rm -f synthetic-pii-api     # remove container
+docker rmi synthetic-pii-api       # remove image
+docker system prune -a             # clean all unused images and containers
+```
+
+### Deploy to EC2
+
+**1. Push image to ECR**
+```bash
+aws ecr create-repository --repository-name synthetic-pii-api --region us-east-1
+docker tag synthetic-pii-api:latest <account>.dkr.ecr.<region>.amazonaws.com/synthetic-pii-api:latest
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin <account>.dkr.ecr.<region>.amazonaws.com
+docker push <account>.dkr.ecr.<region>.amazonaws.com/synthetic-pii-api:latest
+```
+
+**2. On the EC2 instance** (Ubuntu 22.04, t3.large, 30 GB EBS recommended)
+```bash
+# Install Docker (one-time)
+sudo apt-get update && sudo apt-get install -y docker.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker ubuntu
+# Re-login for group change
+
+# Pull and run (same as local)
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin <account>.dkr.ecr.<region>.amazonaws.com
+docker pull <account>.dkr.ecr.<region>.amazonaws.com/synthetic-pii-api:latest
+docker run -d --name synthetic-pii-api --restart unless-stopped \
+  -p 8000:8000 \
+  <account>.dkr.ecr.<region>.amazonaws.com/synthetic-pii-api:latest
+```
+
+---
+
 ## Running the API
 
 ```bash
